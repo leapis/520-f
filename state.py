@@ -47,6 +47,7 @@ class State:
             temp = (self.wolfR[0], self.wolfR[1])
             self.wolfR = (self.wolfB[0], self.wolfB[1])
             self.wolfB = temp
+            
 
     def move(self):
         if self.turn == State.SHEEP:
@@ -184,7 +185,7 @@ class State:
 total_count = 0
 runs = 10000
 for _ in range(runs):
-    x = State(7)
+    x = State(8, (4,0), (6,3), (0,7))
     while x.move():
         #x.display()
         if total_count/runs > 100:
@@ -194,4 +195,4 @@ for _ in range(runs):
         #time.sleep(1)
         total_count += 1
 
-print(total_count/runs)
+print(total_count/runs/2)

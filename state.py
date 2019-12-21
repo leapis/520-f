@@ -12,7 +12,7 @@ class State:
     SHEEP_R = -5
 
     def __init__(self, dim, sheep=None, wolfB=None, wolfR=None):
-        self.turn = State.SHEEP
+        self.turn = State.WOLF
         self.grid = np.zeros((dim, dim), dtype=int)
         self.dim = dim
         dim = dim - 1
@@ -28,8 +28,8 @@ class State:
         self.grid[self.sheep[0]][self.sheep[1]] = State.SHEEP_R
         self.grid[self.wolfB[0]][self.wolfB[1]] = State.WOLFB_R
         self.grid[self.wolfR[0]][self.wolfR[1]] = State.WOLFR_R
-
-        self.reassign_wolves()
+        self.w_m_count = 0
+        #self.reassign_wolves()
         
     def display(self):
         print(self.grid)
@@ -56,12 +56,13 @@ class State:
             self.grid[self.sheep[0]][self.sheep[1]] = State.SHEEP_R
             self.turn = State.WOLF
         else:
+            self.w_m_count += 1
             self.grid[self.wolfB[0]][self.wolfB[1]] = 0
             self.grid[self.wolfR[0]][self.wolfR[1]] = 0
             self.wolfMove()
             self.grid[self.wolfB[0]][self.wolfB[1]] = State.WOLFB_R
             self.grid[self.wolfR[0]][self.wolfR[1]] = State.WOLFR_R
-            self.checkStall()
+            #self.checkStall()
             self.turn = State.SHEEP
         if self.grid[0][0] == State.SHEEP_R and self.grid[1][0] != 0 and self.grid[0][1] != 0:
             return False
@@ -80,7 +81,7 @@ class State:
             self.wolfR = (self.wolfR[0], self.wolfR[1] - 1)
         self.grid[oldR[0]][oldR[1]] = 0
         self.grid[oldB[0]][oldB[1]] = 0
-        self.reassign_wolves()
+        #self.reassign_wolves()
         self.grid[self.wolfB[0]][self.wolfB[1]] = State.WOLFB_R
         self.grid[self.wolfR[0]][self.wolfR[1]] = State.WOLFR_R
         
@@ -99,6 +100,9 @@ class State:
         if x >= self.dim or y >= self.dim:
             return False
         return True
+
+    def getMoves(self):
+        return self.w_m_count
 
     def getSheepMovementOptions(self):
         x, y = self.sheep
@@ -135,7 +139,11 @@ class State:
     def moveWolfB(self):
         mS, nS = self.sheep
         mW, nW = self.wolfB
-        if not self.optimzedB():
+        if self.getMoves() < 2:
+            #print(self.getMoves())
+            pass
+            self.wolfB = (mW, nW)
+        elif not self.optimzedB():
             if mW > mS:
                 if nW > nS:
                     self.wolfB = (mW, nW-1)
@@ -152,7 +160,13 @@ class State:
     def moveWolfR(self):
         mS, nS = self.sheep
         mW, nW = self.wolfR
-        if not self.optimzedR():
+        if self.getMoves() < 2:
+            pass
+        elif nW  > 5:
+            self.wolfR = (mW, nW - 1)
+        elif mS - mW > 4:
+            self.wolfR = (mW + 1, nW)
+        elif not self.optimzedR():
             if nW > nS:
                 if mW > mS:
                     self.wolfR = (mW - 1, nW)
@@ -190,9 +204,9 @@ for _ in range(runs):
         #x.display()
         if total_count/runs > 100:
             x.display()
-            time.sleep(2)
+            time.sleep(1)
         #x.display()
         #time.sleep(1)
-        total_count += 1
+    total_count += x.getMoves()
 
-print(total_count/runs/2)
+print(total_count/runs)
